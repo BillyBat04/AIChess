@@ -28,14 +28,11 @@ class GameState():
         self.currentCastlingRight = CastleRights(True, True, True, True)
         self.castleRightsLog = [CastleRights(self.currentCastlingRight.wks, self.currentCastlingRight.bks,
                                              self.currentCastlingRight.wqs, self.currentCastlingRight.bqs)]
-        # Initialize Prolog
         self.prolog = Prolog()
         self.prolog.consult("chess_rules.pl")
-        # Sync initial board state
         self.sync_board_to_prolog()
 
     def sync_board_to_prolog(self):
-        """Sync board state to Prolog"""
         self.prolog.retractall("piece(_, _, _, _)")
         for r in range(8):
             for c in range(8):
@@ -46,7 +43,6 @@ class GameState():
                     self.prolog.assertz(f"piece({color}, {piece_type}, {r}, {c})")
 
     def getValidMoves(self):
-        """Get valid moves, using Prolog for pawn and king"""
         tempEnpassantPossible = self.enpassantPossible
         tempCastleRights = CastleRights(self.currentCastlingRight.wks, self.currentCastlingRight.bks,
                                         self.currentCastlingRight.wqs, self.currentCastlingRight.bqs)
@@ -68,11 +64,9 @@ class GameState():
                                     try:
                                         end_row = int(result["EndRow"])
                                         end_col = int(result["EndCol"])
-                                        # Check for en passant
                                         is_enpassant = False
                                         if piece_type == "p" and (end_row, end_col) == self.enpassantPossible:
                                             is_enpassant = True
-                                        # Check for pawn promotion
                                         is_promotion = (piece_type == "p" and ((color == "white" and end_row == 0) or (color == "black" and end_row == 7)))
                                         moves.append(Move((r, c), (end_row, end_col), self.board, isEnpassantMove=is_enpassant))
                                     except (ValueError, TypeError) as e:
@@ -107,7 +101,6 @@ class GameState():
         return moves
 
     def clone(self):
-        """Return a copy of the GameState object"""
         cloned_state = GameState()
         cloned_state.board = [row[:] for row in self.board]
         cloned_state.whiteToMove = self.whiteToMove
@@ -217,7 +210,7 @@ class GameState():
         return moves
 
     def getPawnMoves(self, r, c, moves):
-        pass  # Handled by Prolog in getValidMoves
+        pass
 
     def getRookMoves(self, r, c, moves):
         directions = ((-1, 0), (0, -1), (1, 0), (0, 1))
@@ -273,7 +266,7 @@ class GameState():
         self.getBishopMoves(r, c, moves)
 
     def getKingMoves(self, r, c, moves):
-        pass  # Handled by Prolog in getValidMoves
+        pass
 
     def getCastleMoves(self, r, c, moves):
         if self.squareUnderAttack(r, c):
