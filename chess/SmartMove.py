@@ -6,16 +6,18 @@ STATEMATE = 0
 DEPTH = 2
 
 def findRandomMove(validmoves):
+    """Return a random move from valid moves"""
     return validmoves[random.randint(0, len(validmoves) - 1)]
 
 def findBestMove(gs, validMoves):
+    """Find the best move using Minimax with alpha-beta pruning"""
     random.shuffle(validMoves)
     maxScore = -CHECKMATE
     bestMove = None
     for move in validMoves:
-        tempGs = gs.clone()  # Tạo bản sao của trạng thái trò chơi
-        tempGs.makeMove(move, True)  # Thực hiện nước đi trên bản sao
-        nextMoves = tempGs.getValidMoves()  # Lấy danh sách nước đi tiếp theo từ bản sao
+        tempGs = gs.clone()  # Create a copy of the game state
+        tempGs.makeMove(move, True)  # Make move on copy
+        nextMoves = tempGs.getValidMoves()  # Get next valid moves
         score = -findMoveNegaMaxAlphaBeta(tempGs, nextMoves, DEPTH - 1, -CHECKMATE, CHECKMATE, 1 if tempGs.whiteToMove else -1)
         if score > maxScore:
             maxScore = score
@@ -23,6 +25,7 @@ def findBestMove(gs, validMoves):
     return bestMove
 
 def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier):
+    """Negamax implementation with alpha-beta pruning"""
     if depth == 0:
         return turnMultiplier * scoreBoard(gs)
     maxScore = -CHECKMATE
@@ -38,6 +41,7 @@ def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier)
     return maxScore
 
 def scoreBoard(gs):
+    """Evaluate the board state"""
     if gs.checkmate:
         if gs.whiteToMove:
             return -CHECKMATE
@@ -46,10 +50,16 @@ def scoreBoard(gs):
     elif gs.stalemate:
         return STATEMATE
     score = 0
-    for row in gs.board:
-        for square in row:
+    for row in range(8):
+        for col in range(8):
+            square = gs.board[row][col]
             if square[0] == 'w':
                 score += pieceScore[square[1]]
+                # Bonus for pawns and knights in center (D4, D5, E4, E5)
+                if square[1] in ['p', 'N'] and col in [3, 4] and row in [2, 3]:
+                    score += 0.5
             elif square[0] == 'b':
                 score -= pieceScore[square[1]]
+                if square[1] in ['p', 'N'] and col in [3, 4] and row in [4, 5]:
+                    score -= 0.5
     return score
