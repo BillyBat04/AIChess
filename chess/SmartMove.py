@@ -13,9 +13,9 @@ def findBestMove(gs, validMoves):
     maxScore = -CHECKMATE
     bestMove = None
     for move in validMoves:
-        tempGs = gs.clone()  # Tạo bản sao của trạng thái trò chơi
-        tempGs.makeMove(move, True)  # Thực hiện nước đi trên bản sao
-        nextMoves = tempGs.getValidMoves()  # Lấy danh sách nước đi tiếp theo từ bản sao
+        tempGs = gs.clone()
+        tempGs.makeMove(move, True)
+        nextMoves = tempGs.getValidMoves()
         score = -findMoveNegaMaxAlphaBeta(tempGs, nextMoves, DEPTH - 1, -CHECKMATE, CHECKMATE, 1 if tempGs.whiteToMove else -1)
         if score > maxScore:
             maxScore = score
@@ -46,10 +46,15 @@ def scoreBoard(gs):
     elif gs.stalemate:
         return STATEMATE
     score = 0
-    for row in gs.board:
-        for square in row:
+    for row in range(8):
+        for col in range(8):
+            square = gs.board[row][col]
             if square[0] == 'w':
                 score += pieceScore[square[1]]
+                if square[1] in ['p', 'N'] and col in [3, 4] and row in [2, 3]:
+                    score += 0.5
             elif square[0] == 'b':
                 score -= pieceScore[square[1]]
+                if square[1] in ['p', 'N'] and col in [3, 4] and row in [4, 5]:
+                    score -= 0.5
     return score
